@@ -1,54 +1,33 @@
 /// @author Goke Adewuyi
 /// @title LannisterPay API
 
-const express = require('express')
-const { body, validationResult} = require('express-validator');
-const cors = require('cors');
-const app = express()
+const fastify = require('fastify')({ logger: false })
 
-/// @dev Middlewares
-app.use(cors());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-// @dev Routes
-app.post('/split-payments/compute',
-    body('ID').not().isEmpty()
-        .withMessage('ID is required.').trim().escape(),
-    body('Amount').not().isEmpty()
-        .withMessage('Amount is required.').trim().escape(),
-    body('SplitInfo').custom(value => {
-        if (!Array.isArray(value))
-            throw new Error('SplitInfo must be an array.');
-        if (value.length < 1 || value.length > 20)
-            throw new Error('SplitInfo must contain a minimum of 1 split entity and a maximum of 20 entities.');
-        return true;
-    }),
-    (req, res) => {
-    const validationErrors = validationResult(req);
-    if (!validationErrors.isEmpty()) {
-        const errors = [];
-        validationErrors.array().forEach(cur => {
-            errors.push({[cur.param]: cur.msg});
-        })
-        return res.status(400).json({ errors });
-    }
-    try {
-        return res.json(processSplit(req.body));
-    } catch (e) {
-        return res.status(400).json({errors: e.message});
+// @dev Define route to process transaction.
+fastify.route({
+    method: 'POST',
+    url: '/split-payments/compute',
+    handler: async (request, reply) => {
+        try {
+            return await processSplit(request.body);
+        } catch (e) {
+            return reply.status(400).send(JSON.parse(e.message));
+        }
     }
 })
 
 /// @dev Define route for 404.
-app.all('*',(req,res) => {
-    res.status(404).json({ errors: 'Route not found' })
+fastify.all('*', (request,reply) => {
+    reply.status(404).send({ errors: 'Route not found' })
 });
 
 /// @notice Process the split transaction and return an object.
 /// @dev Returns split breakdown.
 /// @param data is the split transaction to be processed.
-const processSplit = (data) => {
+const processSplit = async (data) => {
+    /// @dev Validate the request.
+    validator(data);
+
     /// @dev Get transaction data.
     const {ID, Amount, SplitInfo} = data;
 
@@ -132,12 +111,25 @@ const processSplit = (data) => {
 /// @param Price is the current split value.
 const computeBalance = (Payload, Price) => {
     if (Payload['Balance'] < 0)
-        throw new Error('Balance cannot be less than zero.')
+        throw new Error(JSON.stringify({ errors: 'Balance cannot be less than zero.' }))
     if (Price < 0)
-        throw new Error('Split Amount cannot be less than zero.')
+        throw new Error(JSON.stringify({ errors: 'Split Amount cannot be less than zero.' }))
 };
 
-/// @dev Listen on port 3000
-app.listen(process.env.PORT || 3000, () => {
-    console.log('Server started on port 3000.');
-});
+/// @dev Validate request.
+/// @param data is the request to be validated.
+const validator = (data) => {
+    let errors = [];
+    if (!data['ID'])
+        errors.push({'ID' : 'ID is required.' });
+    if (!data['Amount'])
+        errors.push({'Amount' : 'Amount is required.' });
+    if (data['SplitInfo'].length < 1 || data['SplitInfo'].length > 20)
+        errors.push({'SplitInfo' : 'SplitInfo must contain a minimum of 1 split entity and a maximum of 20 entities.' });
+    if (errors.length > 0)
+        throw new Error(JSON.stringify({ errors }));
+}
+
+/// @dev Run the server!
+const start = async () => await fastify.listen({ port: 3000 })
+start();
