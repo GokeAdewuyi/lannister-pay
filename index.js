@@ -86,9 +86,10 @@ const processSplit = (data) => {
         computeBalance(Payload, Price);
     })
 
+    const endTime = new Date().getTime();
     console.log(`Start time: ${startTime}ms`)
-    console.log(`End time: ${new Date().getTime()}ms`)
-    console.log(`Execution time: ${Math.abs((new Date().getTime() - startTime) / 1000)}ms`)
+    console.log(`End time: ${endTime}ms`)
+    console.log(`Execution time: ${Math.abs((endTime - startTime) / 1000)}ms`)
     console.log('----------------------------------------------------------------')
     return Payload;
 }
