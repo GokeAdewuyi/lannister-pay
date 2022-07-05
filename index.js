@@ -48,6 +48,12 @@ app.post('/split-payments/compute',
     return res.json(data);
 })
 
+app.all('*',(req,res) => {
+    res.status(404)
+        .header('Content Type', 'application/json')
+        .json({ message: 'Route not found' })
+});
+
 app.listen(process.env.PORT || 3000, () => {
     console.log('Server started on port 3000.');
 });
