@@ -49,9 +49,7 @@ app.post('/split-payments/compute',
 })
 
 app.all('*',(req,res) => {
-    res.status(404)
-        .header('Content Type', 'application/json')
-        .json({ message: 'Route not found' })
+    res.status(404).json({ errors: 'Route not found' })
 });
 
 app.listen(process.env.PORT || 3000, () => {
