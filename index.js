@@ -1,3 +1,4 @@
+const startTime = new Date().getTime();
 const express = require('express')
 const { body, validationResult} = require('express-validator');
 const cors = require('cors');
@@ -5,14 +6,13 @@ const app = express()
 
 /// @author Goke Adewuyi
 /// @title LannisterPay API
+
+// Middlewares
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-    res.json({message: "Welcome to LannisterPay"});
-})
-
+// Process Transaction
 app.post('/split-payments/compute',
     body('ID').not().isEmpty()
         .withMessage('ID is required.').trim().escape(),
@@ -85,6 +85,11 @@ const processSplit = (data) => {
         Payload['Balance'] -= Price;
         computeBalance(Payload, Price);
     })
+
+    console.log(`Start time: ${startTime}ms`)
+    console.log(`End time: ${new Date().getTime()}ms`)
+    console.log(`Execution time: ${Math.abs((new Date().getTime() - startTime) / 1000)}ms`)
+    console.log('----------------------------------------------------------------')
     return Payload;
 }
 
