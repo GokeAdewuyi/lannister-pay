@@ -1,10 +1,10 @@
+/// @author Goke Adewuyi
+/// @title LannisterPay API
+
 const express = require('express')
 const { body, validationResult} = require('express-validator');
 const cors = require('cors');
 const app = express()
-
-/// @author Goke Adewuyi
-/// @title LannisterPay API
 
 /// @dev Middlewares
 app.use(cors());
