@@ -131,5 +131,5 @@ const validator = (data) => {
 }
 
 /// @dev Run the server!
-const start = async () => await fastify.listen({ port: 3000 })
+const start = async () => await fastify.listen({ port: process.env.PORT || 3000 })
 start();
