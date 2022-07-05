@@ -13,6 +13,10 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+app.get('/', (req, res) => {
+    res.json({message: "Welcome to LannisterPay"});
+})
+
 app.post('/split-payments/compute',
     body('ID').not().isEmpty()
         .withMessage('ID is required.').trim().escape(),
