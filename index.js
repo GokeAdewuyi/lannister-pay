@@ -50,43 +50,50 @@ app.all('*',(req,res) => {
 /// @dev Returns an object.
 const processSplit = (data) => {
     const {ID, Amount, SplitInfo} = data;
-    let Balance = parseFloat(Amount), SplitBreakdown = [], RatioBalance = null;
-    let Ratio = getRatio(SplitInfo);
-    sortSplits(SplitInfo)
-    SplitInfo.forEach(split => {
-        let Price, isRatio = false;
-        if (split['SplitType'] === 'FLAT') Price = split['SplitValue'];
-        else if (split['SplitType'] === 'PERCENTAGE') Price = (split['SplitValue'] / 100) * Balance;
-        else if (split['SplitType'] === 'RATIO') {
-            isRatio = true
-            Price = (split['SplitValue'] / Ratio) * (RatioBalance ?? Balance);
-        }
-        if (Price < 0)
-            throw new Error('Split amount cannot be less than 0.');
-        if (isRatio) RatioBalance = RatioBalance ?? Balance;
-        Balance -= Price;
-        if (Balance < 0)
-            throw new Error('Balance cannot be less than 0.')
-        SplitBreakdown.push({
+    let Flats = SplitInfo.filter(split => split['SplitType'] === 'FLAT'),
+        Percentages = SplitInfo.filter(split => split['SplitType'] === 'PERCENTAGE'),
+        Ratios = SplitInfo.filter(split => split['SplitType'] === 'RATIO'),
+        RatioSum = Ratios.reduce((a, {SplitValue}) => a + SplitValue, 0),
+        Payload = {ID, Balance: parseFloat(Amount), SplitBreakdown: []}
+
+    Flats.forEach(split => {
+        const Price = split['SplitValue']
+        Payload['SplitBreakdown'].push({
             'SplitEntityId': split['SplitEntityId'],
             'Amount': Price
         })
+        Payload['Balance'] -= Price;
+        computeBalance(Payload, Price);
     })
-    return {ID, Balance, SplitBreakdown};
+    Percentages.forEach(split => {
+        const Price = (split['SplitValue']/100) * Payload.Balance;
+        Payload['SplitBreakdown'].push({
+            'SplitEntityId': split['SplitEntityId'],
+            'Amount': Price
+        })
+        Payload['Balance'] -= Price;
+        computeBalance(Payload, Price);
+    })
+
+    const RatioBalance = Payload['Balance']
+    Ratios.forEach(split => {
+        const Price = (split['SplitValue'] / RatioSum) * RatioBalance;
+        Payload['SplitBreakdown'].push({
+            'SplitEntityId': split['SplitEntityId'],
+            'Amount': Price
+        })
+        Payload['Balance'] -= Price;
+        computeBalance(Payload, Price);
+    })
+    return Payload;
 }
 
-const getRatio = (Arr) => {
-    return Arr.filter(split => split['SplitType'] === 'RATIO').reduce((a, {SplitValue}) => a + SplitValue, 0)
-}
-
-const sortSplits = (Arr) => {
-    return Arr.sort((a, b) => {
-        let fa = a['SplitType'].toLowerCase(), fb = b['SplitType'].toLowerCase();
-        if (fa < fb) return -1;
-        if (fa > fb) return 1;
-        return 0;
-    })
-}
+const computeBalance = (Payload, Price) => {
+    if (Payload['Balance'] < 0)
+        throw new Error('Balance cannot be less than zero.')
+    if (Price < 0)
+        throw new Error('Split Amount cannot be less than zero.')
+};
 
 app.listen(process.env.PORT || 3000, () => {
     console.log('Server started on port 3000.');
