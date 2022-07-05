@@ -1,7 +1,7 @@
 /// @author Goke Adewuyi
 /// @title LannisterPay API
 
-const fastify = require('fastify')({ logger: true })
+const fastify = require('fastify')({ logger: true });
 
 // @dev Define route to process transaction.
 fastify.post('/split-payments/compute', async (request, reply) => {
@@ -127,5 +127,5 @@ const validator = (data) => {
 }
 
 /// @dev Run the server!
-const start = async () => await fastify.listen({ port: process.env.PORT || 3000 })
+const start = async () => await fastify.listen({ host: '0.0.0.0', port: process.env.PORT || 3000 })
 start();
