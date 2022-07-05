@@ -4,15 +4,11 @@
 const fastify = require('fastify')({ logger: true })
 
 // @dev Define route to process transaction.
-fastify.route({
-    method: 'POST',
-    url: '/split-payments/compute',
-    handler: async (request, reply) => {
-        try {
-            return await processSplit(request.body);
-        } catch (e) {
-            return reply.status(400).send(JSON.parse(e.message));
-        }
+fastify.post('/split-payments/compute', async (request, reply) => {
+    try {
+        return await processSplit(request.body);
+    } catch (e) {
+        return reply.status(400).send(JSON.parse(e.message));
     }
 })
 
