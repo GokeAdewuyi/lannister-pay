@@ -1,6 +1,5 @@
-const startTime = new Date().getTime();
 const express = require('express')
-const { body, validationResult} = require('express-validator');
+// const { body, validationResult} = require('express-validator');
 const cors = require('cors');
 const app = express()
 
@@ -14,26 +13,26 @@ app.use(express.json());
 
 // Process Transaction
 app.post('/split-payments/compute',
-    body('ID').not().isEmpty()
-        .withMessage('ID is required.').trim().escape(),
-    body('Amount').not().isEmpty()
-        .withMessage('Amount is required.').trim().escape(),
-    body('SplitInfo').custom(value => {
-        if (!Array.isArray(value))
-            throw new Error('SplitInfo must be an array.');
-        if (value.length < 1 || value.length > 20)
-            throw new Error('SplitInfo must contain a minimum of 1 split entity and a maximum of 20 entities.');
-        return true;
-    }),
+    // body('ID').not().isEmpty()
+    //     .withMessage('ID is required.').trim().escape(),
+    // body('Amount').not().isEmpty()
+    //     .withMessage('Amount is required.').trim().escape(),
+    // body('SplitInfo').custom(value => {
+    //     if (!Array.isArray(value))
+    //         throw new Error('SplitInfo must be an array.');
+    //     if (value.length < 1 || value.length > 20)
+    //         throw new Error('SplitInfo must contain a minimum of 1 split entity and a maximum of 20 entities.');
+    //     return true;
+    // }),
     (req, res) => {
-    const validationErrors = validationResult(req);
-    if (!validationErrors.isEmpty()) {
-        const errors = [];
-        validationErrors.array().forEach(cur => {
-            errors.push({[cur.param]: cur.msg});
-        })
-        return res.status(400).json({ errors });
-    }
+    // const validationErrors = validationResult(req);
+    // if (!validationErrors.isEmpty()) {
+    //     const errors = [];
+    //     validationErrors.array().forEach(cur => {
+    //         errors.push({[cur.param]: cur.msg});
+    //     })
+    //     return res.status(400).json({ errors });
+    // }
     try {
         return res.json(processSplit(req.body));
     } catch (e) {
@@ -85,12 +84,6 @@ const processSplit = (data) => {
         Payload['Balance'] -= Price;
         computeBalance(Payload, Price);
     })
-
-    const endTime = new Date().getTime();
-    console.log(`Start time: ${startTime}ms`)
-    console.log(`End time: ${endTime}ms`)
-    console.log(`Execution time: ${Math.abs((endTime - startTime) / 1000)}ms`)
-    console.log('----------------------------------------------------------------')
     return Payload;
 }
 
