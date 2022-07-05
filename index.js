@@ -4,7 +4,7 @@ const { body, validationResult} = require('express-validator');
 const app = express()
 
 /// @author Goke Adewuyi
-/// @title LannisterPay Api
+/// @title LannisterPay API
 app.use(bodyParser.json({
     extended: true
 }));
