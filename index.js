@@ -1,7 +1,7 @@
 /// @author Goke Adewuyi
 /// @title LannisterPay API
 
-const fastify = require('fastify')({ logger: false })
+const fastify = require('fastify')({ logger: true })
 
 // @dev Define route to process transaction.
 fastify.route({
